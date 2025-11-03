@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Master - Generate & Scan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        tailwind.config = { /* ... (unchanged) ... */ }
+    </script>
+</head>
+
+<body class="font-sans text-white/90 selection:bg-accent/30">
+
+    <div id="background-wrapper">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <nav class="fixed top-0 left-0 right-0 z-50 glassmorphism-nav">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-white tracking-tight">QR Master 🚀</h1>
+                <div class="space-x-6 hidden md:flex">
+                    <a href="#" class="nav-link" data-section="generate">Generate</a>
+                    <a href="#" class="nav-link" data-section="scan">Scan</a>
+                </div>
+                <button id="darkModeToggle" class="btn-glass-interactive p-2 relative z-20 cursor-pointer pointer-events-auto select-none">
+                    <span class="light-icon">☀️</span>
+                    <span class="dark-icon hidden">🌙</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="flex-grow container mx-auto px-4 pt-24 pb-12">
+            <div class="max-w-4xl mx-auto">
+
+                <section id="generate-section" class="content-section">
+                    <div class="glass-card fade-in-up">
+                        <h2 class="text-3xl font-semibold mb-6">Generate QR Code 🖊️</h2>
+                        
+                        <input type="text" id="qrText" placeholder="Enter text or URL..." 
+                               class="w-full p-4 mb-4 text-lg bg-white/70 backdrop-blur-sm border border-white/20 rounded-lg text-gray-900 font-medium placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 relative z-20 pointer-events-auto">
+                        
+                        <button id="generateBtn" class="w-full px-6 py-3 mt-4 text-white font-semibold rounded-xl bg-gradient-to-r from-violet-500 to-blue-500 shadow-lg hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 relative z-20 cursor-pointer pointer-events-auto select-none active:scale-95">
+                            Generate QR
+                        </button>
+                        
+                        <div id="qr-preview-box" class="glass-inset min-h-[280px] w-full flex flex-col items-center justify-center p-6 mt-6">
+                            <p id="qr-status" class="text-white/60">Your QR code will appear here</p>
+                            <div id="qrcode" class="p-4 bg-white rounded-lg hidden"></div> 
+                        </div>
+
+                        <button id="downloadBtn" class="w-full mt-6 px-5 py-2 text-sm text-white font-medium rounded-lg bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-md hover:shadow-lg hover:shadow-cyan-500/50 hover:scale-105 transition-all duration-300 hidden relative z-20 cursor-pointer pointer-events-auto select-none active:scale-95">
+                            Download QR Code (PNG)
+                        </button>
+                    </div>
+                </section>
+
+                <section id="scan-section" class="content-section hidden">
+                    <div class="glass-card fade-in-up">
+                        <h2 class="text-3xl font-semibold mb-6">Scan & Decode 📷</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <button id="liveScanBtn" class="px-6 py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-violet-500 to-blue-500 shadow-lg hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 relative z-20 cursor-pointer pointer-events-auto select-none active:scale-95">
+                                Live Camera Scan
+                            </button>
+                            <label for="qrImageUpload" class="text-center cursor-pointer select-none active:scale-95 px-6 py-3 text-white font-medium rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-md hover:shadow-lg hover:shadow-cyan-500/50 hover:scale-105 transition-all duration-300 relative z-20 pointer-events-auto">
+                                Upload QR Image
+                            </label>
+                            <input type="file" id="qrImageUpload" accept="image/*" class="hidden">
+                        </div>
+                        <button id="stopScanBtn" class="w-full px-5 py-2 text-sm text-white font-medium rounded-lg bg-gradient-to-r from-gray-500 to-gray-700 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 hidden relative z-20 cursor-pointer pointer-events-auto select-none active:scale-95">
+                            Stop Camera
+                        </button>
+                        
+                        <div id="reader" class="w-full mx-auto max-w-md glass-inset min-h-[300px] flex items-center justify-center text-white/60 my-6">
+                            <p id="scan-status">Start scanning with the button above.</p>
+                        </div>
+
+                        <div id="scan-result-box" class="glass-inset p-4 hidden">
+                            <p class="font-bold mb-2">Decoded Content:</p>
+                            
+                            <textarea id="decodedText" readonly 
+                                      class="w-full p-2 resize-none text-sm h-24 bg-white/70 backdrop-blur-sm border border-white/20 rounded-lg text-gray-900 font-medium placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 relative z-20 pointer-events-auto"></textarea>
+                            
+                            <button id="copyBtn" class="w-full mt-2 px-5 py-2 text-sm text-white font-semibold rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 relative z-20 cursor-pointer pointer-events-auto select-none active:scale-95">
+                                Copy Text
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="text-center py-4 mt-8">
+            <p class="text-sm text-white/50">
+                &copy; 2025 QR Code Master. Purely client-side.
+            </p>
+        </footer>
+        <div id="global-message" class="fixed top-20 right-4 p-3 rounded-lg shadow-xl hidden text-white font-medium z-50 glass-card"></div>
+
+    </div><script src="script.js"></script>
+
+</body>
+</html>
