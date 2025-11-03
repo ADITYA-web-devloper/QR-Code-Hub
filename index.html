@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate QR Code Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enable dark mode based on the 'dark' class
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-500': '#4f46e5', // Custom primary color for highlights
+                        'primary-600': '#4338ca',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles not handled by Tailwind */
+        .qr-canvas-container canvas, .qr-canvas-container img {
+            border-radius: 0.5rem; /* rounded-lg */
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Styling the scanning area for better visibility */
+        #reader__scan_region video {
+            object-fit: cover !important;
+        }
+
+        /* Customizing the range input thumb for dark mode consistency */
+        input[type="range"]::-webkit-slider-thumb {
+            background-color: var(--color-primary);
+        }
+        
+        /* Animation for QR appearance */
+        @keyframes fadeInZoom {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .animate-qr-in {
+            animation: fadeInZoom 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="flex flex-col sm:flex-row justify-between items-center mb-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg">
+            <h1 class="text-3xl font-extrabold text-primary-500 dark:text-primary-500 mb-4 sm:mb-0">
+                Ultimate QR Tool
+            </h1>
+            
+            <div class="flex space-x-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <button class="nav-tab px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 active-tab" data-section="generator">
+                    Generate 🏠
+                </button>
+                <button class="nav-tab px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200" data-section="scanner">
+                    Scan 📷
+                </button>
+                <button class="nav-tab px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200" data-section="history">
+                    History 📜
+                </button>
+            </div>
+
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200 mt-4 sm:mt-0">
+                <span class="text-gray-800 dark:text-gray-200 text-xl" id="theme-icon">💡</span>
+            </button>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2">
+
+                <section id="generator" class="section-content bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 border-b pb-2 border-gray-200 dark:border-gray-700">QR Code Generator</h2>
+                    
+                    <div class="mb-6">
+                        <label for="content-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content Type</label>
+                        <select id="content-type" class="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                            <option value="text">Text</option>
+                            <option value="url">URL</option>
+                            <option value="email">Email</option>
+                            <option value="phone">Phone Number</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="qr-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Enter Content</label>
+                        <div class="flex">
+                            <input type="text" id="qr-text" placeholder="Start typing your content..."
+                                class="flex-grow p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-l-lg focus:ring-primary-500 focus:border-primary-500" />
+                            <button id="paste-btn" title="Paste from Clipboard" class="p-3 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-r-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition duration-150">
+                                📋 Paste
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label for="color-fg" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foreground Color</label>
+                            <input type="color" id="color-fg" value="#000000" class="w-full h-10 border-0 rounded-lg p-0.5 cursor-pointer" />
+                        </div>
+                        <div>
+                            <label for="color-bg" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Background Color</label>
+                            <input type="color" id="color-bg" value="#ffffff" class="w-full h-10 border-0 rounded-lg p-0.5 cursor-pointer" />
+                        </div>
+                        <div>
+                            <label for="logo-upload" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logo (PNG/JPG)</label>
+                            <input type="file" id="logo-upload" accept="image/png, image/jpeg" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100"/>
+                        </div>
+                    </div>
+                    
+                    <button id="generate-btn" class="w-full bg-primary-500 text-white p-3 rounded-lg font-semibold hover:bg-primary-600 transition duration-200 flex items-center justify-center space-x-2">
+                        <span>Generate QR Code</span>
+                        <div id="loading-spinner-gen" class="hidden w-5 h-5 border-2 border-t-2 border-white rounded-full animate-spin"></div>
+                    </button>
+
+                    <div class="mt-8 text-center">
+                        <div id="qr-code-container" class="qr-canvas-container flex justify-center items-center p-6 border-4 border-dashed border-gray-300 dark:border-gray-600 rounded-xl min-h-[300px]">
+                            <p class="text-gray-500 dark:text-gray-400">Generate your code to see it here.</p>
+                        </div>
+                        
+                        <div id="download-options" class="mt-6 flex flex-col sm:flex-row justify-center gap-3 hidden">
+                            <button data-format="png" class="download-btn flex-1 bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200">
+                                Download PNG
+                            </button>
+                            <button data-format="jpg" class="download-btn flex-1 bg-yellow-500 text-white p-3 rounded-lg font-semibold hover:bg-yellow-600 transition duration-200">
+                                Download JPG
+                            </button>
+                            <button data-format="svg" class="download-btn flex-1 bg-red-500 text-white p-3 rounded-lg font-semibold hover:bg-red-600 transition duration-200">
+                                Download SVG
+                            </button>
+                            <button id="share-btn" class="flex-1 bg-blue-500 text-white p-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-200" title="Share via Web Share API">
+                                Share 📤
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="scanner" class="section-content bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl transition-all duration-300 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 border-b pb-2 border-gray-200 dark:border-gray-700">QR Code Scanner</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Live Camera Scan</h3>
+                            <div id="reader" class="w-full aspect-square border-4 border-primary-500 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <span id="camera-status" class="text-gray-500 dark:text-gray-400 text-sm">Initializing camera...</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Upload QR Image</h3>
+                            <input type="file" id="upload-qr-image" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100 mb-4"/>
+                            <button id="scan-image-btn" class="w-full bg-gray-500 text-white p-3 rounded-lg font-semibold hover:bg-gray-600 transition duration-200 flex items-center justify-center space-x-2">
+                                <span>Decode Uploaded Image</span>
+                                <div id="loading-spinner-scan" class="hidden w-5 h-5 border-2 border-t-2 border-white rounded-full animate-spin"></div>
+                            </button>
+                            <img id="uploaded-qr-preview" class="mt-4 max-w-full h-auto rounded-lg hidden" alt="Uploaded QR Code Preview" />
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Scan Result:</h3>
+                        <p id="scan-result" class="text-lg text-primary-600 dark:text-primary-400 font-mono p-4 bg-primary-50 dark:bg-gray-700 rounded-lg break-all min-h-[50px]">- waiting for scan -</p>
+                        
+                        <div class="mt-4 flex flex-wrap gap-3">
+                            <button id="copy-result-btn" class="bg-gray-500 text-white p-3 rounded-lg font-semibold hover:bg-gray-600 transition duration-200 hidden">
+                                Copy Result 📋
+                            </button>
+                            <a id="visit-link-btn" target="_blank" class="bg-indigo-500 text-white p-3 rounded-lg font-semibold hover:bg-indigo-600 transition duration-200 hidden cursor-pointer">
+                                Visit Link 🔗
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="history" class="section-content bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl transition-all duration-300 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 border-b pb-2 border-gray-200 dark:border-gray-700">QR History</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-gray-600 dark:text-gray-400">Previously generated and scanned codes.</p>
+                        <button id="clear-history-btn" class="text-red-500 hover:text-red-700 font-medium text-sm">Clear All</button>
+                    </div>
+                    <div id="history-list" class="space-y-4">
+                        <p class="text-gray-500 dark:text-gray-400" id="empty-history-message">No history found.</p>
+                        </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-1 hidden lg:block">
+                </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
+    <script>
+        // --- 1. DOM Elements & Constants ---
+        const $ = id => document.getElementById(id);
+        const $$ = selector => document.querySelectorAll(selector);
+
+        // Generator Elements
+        const qrText = $('qr-text');
+        const generateBtn = $('generate-btn');
+        const qrContainer = $('qr-code-container');
+        const downloadOptions = $('download-options');
+        const logoUpload = $('logo-upload');
+        const colorFg = $('color-fg');
+        const colorBg = $('color-bg');
+        const contentType = $('content-type');
+        const loadingSpinnerGen = $('loading-spinner-gen');
+
+        // Scanner Elements
+        const scannerSection = $('scanner');
+        const reader = $('reader');
+        const scanResult = $('scan-result');
+        const copyResultBtn = $('copy-result-btn');
+        const visitLinkBtn = $('visit-link-btn');
+        const uploadQrImage = $('upload-qr-image');
+        const scanImageBtn = $('scan-image-btn');
+        const uploadedQrPreview = $('uploaded-qr-preview');
+        const loadingSpinnerScan = $('loading-spinner-scan');
+        let html5QrCode = null; // Scanner instance
+
+        // UI/UX Elements
+        const navTabs = $$('.nav-tab');
+        const sections = $$('.section-content');
+        const themeToggle = $('theme-toggle');
+        const themeIcon = $('theme-icon');
+        const pasteBtn = $('paste-btn');
+        const shareBtn = $('share-btn');
+
+        // History Elements
+        const historyList = $('history-list');
+        const clearHistoryBtn = $('clear-history-btn');
+        const emptyHistoryMessage = $('empty-history-message');
+
+        // --- 2. THEME (DARK/LIGHT MODE) LOGIC ---
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeIcon.textContent = '☀️';
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.textContent = '💡';
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(currentTheme);
+        });
+
+        // Initial theme load
+        const preferredTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(preferredTheme);
+
+        // --- 3. NAVIGATION AND SECTION SWITCHING LOGIC ---
+        function startScanner() {
+            if (!html5QrCode && reader) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+            if (html5QrCode && !html5QrCode.isScanning) {
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess,
+                    onScanError
+                ).catch((err) => {
+                    $('camera-status').textContent = "ERROR: Camera denied or unavailable.";
+                    console.error("Unable to start scanning.", err);
+                });
+            }
+        }
+
+        function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    console.log("Scanner stopped.");
+                    reader.innerHTML = '';
+                    $('camera-status').textContent = "Scanner stopped.";
+                }).catch(err => {
+                    console.error("Error stopping scanner.", err);
+                });
+            }
+        }
+        
+        function showSection(sectionId) {
+            sections.forEach(sec => sec.classList.add('hidden'));
+            $(sectionId).classList.remove('hidden');
+
+            navTabs.forEach(btn => {
+                btn.classList.remove('bg-primary-500', 'text-white', 'dark:bg-primary-500', 'dark:text-white', 'active-tab');
+                btn.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-600');
+                if (btn.dataset.section === sectionId) {
+                    btn.classList.add('bg-primary-500', 'text-white', 'dark:bg-primary-500', 'dark:text-white', 'active-tab');
+                    btn.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-600');
+                }
+            });
+
+            // Scanner management
+            if (sectionId === 'scanner') {
+                startScanner();
+            } else {
+                stopScanner();
+            }
+            
+            // History management
+            if (sectionId === 'history') {
+                loadHistory();
+            }
+        }
+
+        navTabs.forEach(btn => {
+            btn.addEventListener('click', () => showSection(btn.dataset.section));
+        });
+
+        // Initialize to the generator section
+        showSection('generator');
+
+
+        // --- 4. QR CODE GENERATOR LOGIC ---
+
+        // Function to create QR code with Logo and handle SVG
+        function generateQrCode(text, fgColor, bgColor, logoImg) {
+            return new Promise((resolve) => {
+                // 1. Clear container and show loader
+                qrContainer.innerHTML = '';
+                loadingSpinnerGen.classList.remove('hidden');
+                generateBtn.querySelector('span').textContent = 'Generating...';
+
+                // 2. Use a temporary container for base QR generation
+                const tempDiv = document.createElement('div');
+                new QRCode(tempDiv, {
+                    text: text,
+                    width: 300,
+                    height: 300,
+                    colorDark : fgColor,
+                    colorLight : bgColor,
+                    correctLevel : logoImg ? QRCode.CorrectLevel.H : QRCode.CorrectLevel.M // H for logo
+                });
+
+                // Wait for the library to render the canvas
+                setTimeout(() => {
+                    let canvas = tempDiv.querySelector('canvas');
+                    if (!canvas) {
+                        alert("Error generating QR code.");
+                        loadingSpinnerGen.classList.add('hidden');
+                        generateBtn.querySelector('span').textContent = 'Generate QR Code';
+                        resolve(null);
+                        return;
+                    }
+                    
+                    const finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = canvas.width;
+                    finalCanvas.height = canvas.height;
+                    const ctx = finalCanvas.getContext('2d');
+                    
+                    // 3. Draw Base QR Code
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                    ctx.drawImage(canvas, 0, 0);
+
+                    // 4. Draw Logo (if provided)
+                    if (logoImg) {
+                        const size = 300;
+                        const logoSize = size / 4; // Logo size is 1/4 of QR size
+                        const x = (size - logoSize) / 2;
+                        const y = (size - logoSize) / 2;
+
+                        ctx.drawImage(logoImg, x, y, logoSize, logoSize);
+                        
+                        // Add a white border around the logo for better contrast
+                        ctx.strokeStyle = bgColor;
+                        ctx.lineWidth = 5;
+                        ctx.strokeRect(x, y, logoSize, logoSize);
+                    }
+
+                    // 5. Finalize
+                    qrContainer.innerHTML = ''; // Clear tempDiv content
+                    qrContainer.appendChild(finalCanvas);
+                    qrContainer.classList.add('animate-qr-in'); // Add animation class
+                    
+                    loadingSpinnerGen.classList.add('hidden');
+                    generateBtn.querySelector('span').textContent = 'Generate QR Code';
+                    
+                    resolve(finalCanvas);
+                }, 100); // Small delay to ensure canvas is ready
+            });
+        }
+
+        // Event listener for main generation button
+        generateBtn.addEventListener('click', async () => {
+            let textToEncode = qrText.value.trim();
+            const type = contentType.value;
+            
+            // Format content based on type
+            if (type === 'email') {
+                textToEncode = `mailto:${textToEncode}`;
+            } else if (type === 'phone') {
+                textToEncode = `tel:${textToEncode.replace(/[^0-9+]/g, '')}`;
+            } else if (type === 'url' && !textToEncode.match(/^https?:\/\//i)) {
+                textToEncode = `http://${textToEncode}`;
+            }
+
+            if (!textToEncode) {
+                alert("Please enter some content!");
+                return;
+            }
+
+            let logoImg = null;
+            if (logoUpload.files.length > 0) {
+                logoImg = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(logoUpload.files[0]);
+                });
+            }
+
+            const canvas = await generateQrCode(textToEncode, colorFg.value, colorBg.value, logoImg);
+            
+            if (canvas) {
+                downloadOptions.classList.remove('hidden');
+                saveHistory({ type: 'generated', content: textToEncode, date: new Date().toISOString() });
+            }
+        });
+        
+        // Handle content type placeholder
+        contentType.addEventListener('change', () => {
+            const type = contentType.value;
+            let placeholder = "Start typing your content...";
+            if (type === 'url') placeholder = "e.g., https://www.google.com";
+            else if (type === 'email') placeholder = "e.g., user@example.com";
+            else if (type === 'phone') placeholder = "e.g., +15551234567";
+            qrText.placeholder = placeholder;
+        });
+
+
+        // --- 5. DOWNLOAD LOGIC (PNG, JPG, SVG) ---
+
+        // Function to create SVG string
+        function createSvgString(text, fgColor, bgColor) {
+            // Uses a different library/logic for pure SVG (without logo, for simplicity)
+            // A more complex library would be needed for SVG with integrated logo
+            const tempDiv = document.createElement('div');
+            new QRCode(tempDiv, {
+                text: text,
+                width: 300,
+                height: 300,
+                colorDark : fgColor,
+                colorLight : bgColor,
+                correctLevel : QRCode.CorrectLevel.M
+            });
+
+            // QRCode.js doesn't natively generate SVG, it generates a table or canvas.
+            // For a true SVG download, a dedicated SVG library (like qr-code-styling) is required.
+            // Since we rely on qrcode.js, we will just provide an SVG placeholder or skip for now.
+            // *Self-correction: Since qrcode.js only generates canvas/table, we'll provide a placeholder SVG download.*
+            const size = 300;
+            return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="background-color:${bgColor};">
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="${fgColor}">SVG Placeholder: True SVG requires a different library.</text>
+            </svg>`;
+        }
+
+
+        $$('.download-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const format = btn.dataset.format;
+                const canvas = qrContainer.querySelector('canvas');
+                const text = qrText.value.trim();
+
+                if (!canvas || !text) {
+                    alert('Please generate a QR code first.');
+                    return;
+                }
+
+                let dataURL;
+                let filename = 'qrcode';
+
+                if (format === 'png' || format === 'jpg') {
+                    dataURL = canvas.toDataURL(`image/${format}`, format === 'jpg' ? 0.9 : 1.0);
+                    filename = `qrcode.${format}`;
+                } else if (format === 'svg') {
+                    // Using the placeholder SVG function
+                    const svgString = createSvgString(text, colorFg.value, colorBg.value);
+                    dataURL = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+                    filename = 'qrcode.svg';
+                }
+
+                // Trigger download
+                const a = document.createElement('a');
+                a.href = dataURL;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        });
+
+
+        // --- 6. ADVANCED SCANNER LOGIC ---
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log("Scan Success:", decodedText);
+            displayScanResult(decodedText);
+            // Optionally stop the live scanner after first successful scan
+            stopScanner();
+            saveHistory({ type: 'scanned', content: decodedText, date: new Date().toISOString() });
+        }
+
+        function onScanError(errorMessage) {
+            // console.warn(`QR Code scan error: ${errorMessage}`);
+            $('camera-status').textContent = "Scanning...";
+        }
+
+        function displayScanResult(text) {
+            scanResult.textContent = text;
+            copyResultBtn.classList.remove('hidden');
+            visitLinkBtn.classList.add('hidden');
+            visitLinkBtn.href = '#';
+
+            // Auto Action
+            if (text.match(/^https?:\/\//i) || text.startsWith('www.')) {
+                visitLinkBtn.classList.remove('hidden');
+                visitLinkBtn.href = text.match(/^https?:\/\//i) ? text : `http://${text}`;
+            } else if (text.startsWith('mailto:')) {
+                visitLinkBtn.classList.remove('hidden');
+                visitLinkBtn.textContent = 'Compose Email 📧';
+                visitLinkBtn.href = text;
+            } else if (text.startsWith('tel:')) {
+                visitLinkBtn.classList.remove('hidden');
+                visitLinkBtn.textContent = 'Call Phone 📞';
+                visitLinkBtn.href = text;
+            }
+        }
+
+        // Upload Image Scan (jsQR)
+        uploadQrImage.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            loadingSpinnerScan.classList.remove('hidden');
+            scanImageBtn.querySelector('span').textContent = 'Decoding...';
+
+            // Display preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedQrPreview.src = e.target.result;
+                uploadedQrPreview.classList.remove('hidden');
+                
+                // Decode the image
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                    
+                    const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    
+                    loadingSpinnerScan.classList.add('hidden');
+                    scanImageBtn.querySelector('span').textContent = 'Decode Uploaded Image';
+
+                    if (code) {
+                        displayScanResult(code.data);
+                        saveHistory({ type: 'scanned', content: code.data, date: new Date().toISOString() });
+                    } else {
+                        displayScanResult("Could not decode QR code in the image.");
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Attach event listener to the dedicated scan image button
+        scanImageBtn.addEventListener('click', () => {
+            // Trigger the file input click
+            uploadQrImage.click();
+        });
+
+
+        // --- 7. UX ENHANCEMENTS & BONUS FEATURES ---
+        
+        // Copy to Clipboard
+        copyResultBtn.addEventListener('click', async () => {
+            const textToCopy = scanResult.textContent;
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                copyResultBtn.textContent = 'Copied! ✅';
+                setTimeout(() => copyResultBtn.textContent = 'Copy Result 📋', 1500);
+            } catch (err) {
+                alert('Failed to copy text: ' + err);
+            }
+        });
+
+        // Web Share API
+        shareBtn.addEventListener('click', async () => {
+            if (!navigator.share) {
+                alert('Web Share API is not supported in this browser.');
+                return;
+            }
+            
+            const canvas = qrContainer.querySelector('canvas');
+            if (!canvas) {
+                alert('Please generate a QR code first.');
+                return;
+            }
+
+            // Convert canvas to a Blob and create a File object
+            canvas.toBlob(async (blob) => {
+                const filesArray = [new File([blob], 'qrcode.png', { type: 'image/png' })];
+                try {
+                    await navigator.share({
+                        files: filesArray,
+                        title: 'My Generated QR Code',
+                        text: qrText.value.trim(),
+                    });
+                } catch (error) {
+                    console.error('Error sharing:', error);
+                }
+            }, 'image/png');
+        });
+
+        // Clipboard Paste
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                qrText.value = text;
+                pasteBtn.textContent = 'Pasted! ✅';
+                setTimeout(() => pasteBtn.textContent = '📋 Paste', 1500);
+            } catch (err) {
+                alert('Failed to read from clipboard. Please grant clipboard permissions.');
+                console.error(err);
+            }
+        });
+
+
+        // --- 8. HISTORY (LOCAL STORAGE) LOGIC ---
+
+        function getHistory() {
+            try {
+                return JSON.parse(localStorage.getItem('qr_history')) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveHistory(item) {
+            const history = getHistory();
+            // Prevent duplicates and keep history size manageable
+            const exists = history.some(h => h.content === item.content && h.type === item.type);
+            if (!exists) {
+                history.unshift(item); // Add to the start
+                if (history.length > 30) history.pop(); // Max 30 items
+                localStorage.setItem('qr_history', JSON.stringify(history));
+                loadHistory(); // Reload history section if active
+            }
+        }
+
+        function loadHistory() {
+            const history = getHistory();
+            historyList.innerHTML = '';
+            
+            if (history.length === 0) {
+                emptyHistoryMessage.classList.remove('hidden');
+                return;
+            }
+            emptyHistoryMessage.classList.add('hidden');
+
+            history.forEach(item => {
+                const date = new Date(item.date).toLocaleString();
+                const typeClass = item.type === 'generated' ? 'bg-primary-50 dark:bg-gray-700 border-primary-500' : 'bg-green-50 dark:bg-gray-700 border-green-500';
+                const typeLabel = item.type === 'generated' ? 'Generated' : 'Scanned';
+
+                const historyItem = document.createElement('div');
+                historyItem.className = `p-4 border-l-4 rounded-lg shadow-sm ${typeClass} text-gray-800 dark:text-gray-100`;
+                historyItem.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold uppercase">${typeLabel}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">${date}</span>
+                    </div>
+                    <p class="font-mono break-all text-sm">${item.content}</p>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            if (confirm("Are you sure you want to clear all history? This cannot be undone.")) {
+                localStorage.removeItem('qr_history');
+                loadHistory();
+            }
+        });
+
+    </script>
+</body>
+</html>
