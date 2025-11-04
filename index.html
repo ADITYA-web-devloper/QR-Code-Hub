@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Hub</title>
+
+    <!-- 1. Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. Google Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 3. JS Library CDNs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+    <!-- 4. Embedded CSS & Tailwind Configuration -->
+    <style>
+        /* Apply the Inter font family */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom styles for the QR code display (to ensure white background) */
+        #qrcode-display {
+            background-color: white;
+            padding: 16px; /* p-4 */
+            border-radius: 8px; /* rounded-lg */
+            display: inline-block; /* Aligns with download button */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Ensure generated QR code (canvas/img) is centered */
+        #qrcode-display canvas,
+        #qrcode-display img {
+            margin: auto;
+        }
+
+        /* Simple loading spinner for when scanner is starting */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen antialiased">
+
+    <!-- Main Application Container -->
+    <div class="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400">
+                QR Code Hub
+            </h1>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="mb-6">
+            <div class="flex border-b border-gray-300 dark:border-gray-700">
+                <button id="tab-generate"
+                    class="tab-btn py-3 px-6 font-medium text-lg border-b-2 focus:outline-none">
+                    Generate
+                </button>
+                <button id="tab-scan"
+                    class="tab-btn py-3 px-6 font-medium text-lg border-b-2 focus:outline-none">
+                    Scan
+                </button>
+            </div>
+        </nav>
+
+        <!-- ======================= -->
+        <!-- TAB 1: GENERATE CONTENT -->
+        <!-- ======================= -->
+        <main id="content-generate" class="tab-content">
+            <div class="space-y-6">
+                <!-- QR Type Selector -->
+                <div>
+                    <label for="qr-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        QR Code Type
+                    </label>
+                    <select id="qr-type"
+                        class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="text">Text</option>
+                        <option value="url">URL</option>
+                        <option value="phone">Phone Number</option>
+                        <option value="sms">SMS</option>
+                        <option value="email">Email</option>
+                        <option value="wifi">WiFi</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Input Forms Container -->
+                <div id="form-inputs" class="space-y-4">
+                    <!-- Text Form -->
+                    <div id="form-text" class="form-section space-y-2">
+                        <label for="qr-text" class="block text-sm font-medium">Text</label>
+                        <textarea id="qr-text" rows="4"
+                            class="w-full dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter any text..."></textarea>.
+                    </div>
+
+                    <!-- URL Form -->
+                    <div id="form-url" class="form-section hidden space-y-2">
+                        <label for="qr-url" class="block text-sm font-medium">URL</label>
+                        <input type="url" id="qr-url"
+                            class="w-full dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="https://google.com">
+                    </div>
+
+                    <!-- Phone Form -->
+                    <div id="form-phone" class="form-section hidden space-y-2">
+                        <label for="qr-phone" class="block text-sm font-medium">Phone Number</label>
+                        <input type="tel" id="qr-phone"
+                            class="w-full dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="+1234567890">
+                    </div>
+
+                    <!-- SMS Form -->
+                    <div id="form-sms" class="form-section hidden space-y-4">
+                        <div>
+                            <label for="qr-sms-phone" class="block text-sm font-medium">Phone Number</label>
+                            <input type="tel" id="qr-sms-phone"
+                                class="w-full mt-1 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="1234567890">
+                        </div>
+                        <div>
+                            <label for="qr-sms-message" class="block text-sm font-medium">Message</label>
+                            <textarea id="qr-sms-message" rows="3"
+                                class="w-full mt-1 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Hello!"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Email Form -->
+                    <div id="form-email" class="form-section hidden space-y-4">
+                        <div>
+                            <label for="qr-email-to" class="block text-sm font-medium">Email Address (To)</label>
+                            <input type="email" id="qr-email-to"
+                                class="w-full mt-1 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="user@example.com">
+                        </div>
+                        <div>
+                            <label for="qr-email-subject" class="block text-sm font-medium">Subject</label>
+                            <input type="text" id="qr-email-subject"
+                                class="w-full mt-1 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Meeting Request">
+                        </div>
+                        <div>
+                            <label for="qr-email-body" class="block text-sm font-medium">Body</label>
+                            <textarea id="qr-email-body" rows="3"
+                                class="w-full mt-1 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Hi, let's connect..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- WiFi Form -->
+                    <div id="form-wifi" class="form-section hidden space-y-4">
+                        <div>
+                            <label for="qr-wifi-ssid" class="block text-sm font-medium">SSID (Network Name)</label>
+                            <input type="text" id="qr-wifi-ssid"
+                                class="w-full mt-1 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="MyHomeNetwork">
+                        </div>
+                        <div>
+                            <label for="qr-wifi-pass" class="block text-sm font-medium">Password</label>
+                            <input type="password" id="qr-wifi-pass"
+                                class="w-full mt-1 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="••••••••">
+                        </div>
+                        <div>
+                            <label for="qr-wifi-enc" class="block text-sm font-medium">Encryption</label>
+                            <select id="qr-wifi-enc"
+                                class="w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="WPA">WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">None</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="generate-error"
+                    class="hidden text-center text-red-500 dark:text-red-400 font-medium p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="generate-btn"
+                        class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                        Generate QR Code
+                    </button>
+                    <button id="clear-btn"
+                        class="w-full sm:w-1/2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                        Clear Fields
+                    </button>
+                </div>
+
+                <!-- QR Code Display Area -->
+                <div id="qrcode-display-container" class="hidden text-center pt-6">
+                    <h3 class="text-lg font-semibold mb-4">Your QR Code:</h3>
+                    <div id="qrcode-display" class="mx-auto">
+                        <!-- qrcode.js will render here -->
+                    </div>
+                    <button id="download-btn"
+                        class="mt-6 w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                        Download QR
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- ===================== -->
+        <!-- TAB 2: SCAN CONTENT   -->
+        <!-- ===================== -->
+        <main id="content-scan" class="tab-content hidden">
+            <div class="text-center">
+                <!-- Start Button -->
+                <button id="start-scan-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                    Start Scan
+                </button>
+
+                <!-- Scanner UI -->
+                <div id="scanner-ui" class="hidden w-full mt-4">
+                    <p id="scanner-loading-message" class="text-sm text-gray-600 dark:text-gray-400 mb-2 flex items-center justify-center">
+                        <span class="spinner mr-2"></span> Starting camera...
+                    </p>
+                    <video id="scan-video" class="w-full h-auto rounded-lg shadow-inner bg-gray-900" playsinline></video>
+                    
+                    <!-- *** NEW STOP BUTTON *** -->
+                    <button id="stop-scan-btn"
+                        class="hidden w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                        Stop Scan
+                    </button>
+
+                    <!-- Hidden canvas for jsQR processing -->
+                    <canvas id="scan-canvas" class="hidden"></canvas>
+                </div>
+
+                <!-- Scan Error Message -->
+                <div id="scan-error"
+                    class="hidden mt-4 text-center text-red-500 dark:text-red-400 font-medium p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                    Camera access denied. Please enable camera permissions in your browser settings.
+                </div>
+
+                <!-- Scan Result Display -->
+                <div id="scan-result-container" class="hidden mt-6 text-left">
+                    <label for="scan-result" class="block text-lg font-semibold mb-2">Scanned Result:</label>
+                    <textarea id="scan-result" readonly
+                        class="w-full h-32 p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm font-mono text-sm"></textarea>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                        <button id="copy-btn"
+                            class="w-full sm:w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                            Copy to Clipboard
+                        </button>
+                        <button id="scan-again-btn"
+                            class="w-full sm:w-1/2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                            Scan Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- ======================= -->
+    <!-- JAVASCRIPT LOGIC        -->
+    <!-- ======================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Common Elements ---
+            const tabs = {
+                generate: document.getElementById('tab-generate'),
+                scan: document.getElementById('tab-scan')
+            };
+            const contents = {
+                generate: document.getElementById('content-generate'),
+                scan: document.getElementById('content-scan')
+            };
+
+            // --- Generator Elements ---
+            const qrTypeSelect = document.getElementById('qr-type');
+            const formInputs = document.getElementById('form-inputs');
+            const allFormSections = formInputs.querySelectorAll('.form-section');
+            const generateBtn = document.getElementById('generate-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const qrcodeDisplayContainer = document.getElementById('qrcode-display-container');
+            const qrcodeDisplay = document.getElementById('qrcode-display');
+            const generateError = document.getElementById('generate-error');
+            let qrCodeInstance = null;
+
+            // --- Scanner Elements ---
+            const startScanBtn = document.getElementById('start-scan-btn');
+            const scannerUI = document.getElementById('scanner-ui');
+            const scannerLoadingMsg = document.getElementById('scanner-loading-message');
+            const video = document.getElementById('scan-video');
+            const stopScanBtn = document.getElementById('stop-scan-btn'); // *** ADDED VARIABLE ***
+            const canvas = document.getElementById('scan-canvas');
+            const ctx = canvas.getContext('2d');
+            const scanError = document.getElementById('scan-error');
+            const scanResultContainer = document.getElementById('scan-result-container');
+            const scanResult = document.getElementById('scan-result');
+            const copyBtn = document.getElementById('copy-btn');
+            const scanAgainBtn = document.getElementById('scan-again-btn');
+            let videoStream = null;
+            let scanAnimationLoop = null;
+
+
+            // ===========================
+            // --- TABBING LOGIC ---
+            // ===========================
+            function switchTab(tabName) {
+                // Stop scanner if switching away from it
+                if (tabName !== 'scan') {
+                    stopScanner();
+                }
+
+                // Update tab buttons
+                for (const [key, tab] of Object.entries(tabs)) {
+                    if (key === tabName) {
+                        tab.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                        tab.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-300', 'hover:border-gray-400');
+                    } else {
+                        tab.classList.remove('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                        tab.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-300', 'hover:border-gray-400');
+                    }
+                }
+
+                // Update content visibility
+                for (const [key, content] of Object.entries(contents)) {
+                    if (key === tabName) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                }
+            }
+
+            // ===========================
+            // --- GENERATOR LOGIC ---
+            // ===========================
+
+            // Show/Hide form inputs based on selected QR type
+            function updateFormInputs() {
+                const selectedType = qrTypeSelect.value;
+                allFormSections.forEach(section => {
+                    if (section.id === `form-${selectedType}`) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Get formatted data string from inputs
+            function getFormattedQRData() {
+                const type = qrTypeSelect.value;
+                try {
+                    switch (type) {
+                        case 'text':
+                            const text = document.getElementById('qr-text').value;
+                            if (!text) throw new Error('Text field is empty.');
+                            return text;
+
+                        case 'url':
+                            const url = document.getElementById('qr-url').value;
+                            if (!url) throw new Error('URL field is empty.');
+                            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                                throw new Error('URL must start with http:// or https://');
+                            }
+                            return url;
+
+                        case 'phone':
+                            const phone = document.getElementById('qr-phone').value;
+                            if (!phone) throw new Error('Phone number field is empty.');
+                            return `tel:${phone}`;
+
+                        case 'sms':
+                            const smsPhone = document.getElementById('qr-sms-phone').value;
+                            const smsMsg = document.getElementById('qr-sms-message').value;
+                            if (!smsPhone) throw new Error('Phone number field is empty.');
+                            return `SMSTO:${smsPhone}:${smsMsg}`;
+
+                        case 'email':
+                            const emailTo = document.getElementById('qr-email-to').value;
+                            const emailSub = document.getElementById('qr-email-subject').value;
+                            const emailBody = document.getElementById('qr-email-body').value;
+                            if (!emailTo) throw new Error('Email address field is empty.');
+                            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTo)) {
+                                throw new Error('Invalid email address format.');
+                            }
+                            return `mailto:${emailTo}?subject=${encodeURIComponent(emailSub)}&body=${encodeURIComponent(emailBody)}`;
+
+                        case 'wifi':
+                            const ssid = document.getElementById('qr-wifi-ssid').value;
+                            const pass = document.getElementById('qr-wifi-pass').value;
+                            const enc = document.getElementById('qr-wifi-enc').value;
+                            if (!ssid) throw new Error('SSID (Network Name) is empty.');
+                            if (enc === 'nopass') {
+                                return `WIFI:T:nopass;S:${ssid};;`;
+                            }
+                            return `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+
+                        default:
+                            throw new Error('Invalid QR type selected.');
+                    }
+                } catch (error) {
+                    generateError.textContent = error.message;
+                    generateError.classList.remove('hidden');
+                    return null;
+                }
+            }
+
+            // Generate the QR code
+            function generateQRCode() {
+                // Clear previous state
+                qrcodeDisplay.innerHTML = '';
+                qrCodeInstance = null;
+                generateError.classList.add('hidden');
+                qrcodeDisplayContainer.classList.add('hidden');
+
+                const data = getFormattedQRData();
+                if (!data) {
+                    return; // Error already shown by getFormattedQRData
+                }
+
+                // Generate new QR code
+                try {
+                    qrCodeInstance = new QRCode(qrcodeDisplay, {
+                        text: data,
+                        width: 256,
+                        height: 256,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    qrcodeDisplayContainer.classList.remove('hidden');
+                } catch (error) {
+                    generateError.textContent = 'Failed to generate QR code. Data may be too long.';
+                    generateError.classList.remove('hidden');
+                }
+            }
+
+            // Clear all input fields for the current form
+            function clearFields() {
+                const selectedType = qrTypeSelect.value;
+                const activeForm = document.getElementById(`form-${selectedType}`);
+                activeForm.querySelectorAll('input, textarea').forEach(input => input.value = '');
+                activeForm.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                
+                qrcodeDisplay.innerHTML = '';
+                qrCodeInstance = null;
+                qrcodeDisplayContainer.classList.add('hidden');
+                generateError.classList.add('hidden');
+            }
+
+            // Download the generated QR code
+            function downloadQRCode() {
+                if (!qrCodeInstance) return;
+
+                // Find the canvas or img generated by the library
+                const canvas = qrcodeDisplay.querySelector('canvas');
+                const img = qrcodeDisplay.querySelector('img');
+                
+                let dataUrl = '';
+                if (canvas) {
+                    dataUrl = canvas.toDataURL('image/png');
+                } else if (img) {
+                    dataUrl = img.src;
+                } else {
+                    alert('Could not find QR code image to download.');
+                    return;
+                }
+
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = 'qrcode.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+
+            // ===========================
+            // --- SCANNER LOGIC ---
+            // ===========================
+
+            // Start the camera and scanning loop
+            async function startScanner() {
+                // Reset UI
+                startScanBtn.classList.add('hidden');
+                scanError.classList.add('hidden');
+                scanResultContainer.classList.add('hidden');
+                scannerUI.classList.remove('hidden');
+                scannerLoadingMsg.classList.remove('hidden');
+                video.classList.add('hidden');
+                stopScanBtn.classList.add('hidden'); // *** HIDE STOP BTN INITIALLY ***
+
+                try {
+                    // Request camera stream
+                    videoStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "environment" }
+                    });
+                    
+                    video.srcObject = videoStream;
+                    video.setAttribute('playsinline', true); // Required for iOS
+                    video.play();
+
+                    // Hide loading message and show video once it's playing
+                    video.onloadedmetadata = () => {
+                        scannerLoadingMsg.classList.add('hidden');
+                        video.classList.remove('hidden');
+                        stopScanBtn.classList.remove('hidden'); // *** SHOW STOP BTN ***
+                        // Start the scanning loop
+                        scanAnimationLoop = requestAnimationFrame(scanFrame);
+                    };
+
+                } catch (err) {
+                    console.error("Camera Error:", err);
+                    scanError.textContent = 'Camera access denied. Please enable camera permissions in your browser settings.';
+                    scanError.classList.remove('hidden');
+                    scannerUI.classList.add('hidden');
+                    startScanBtn.classList.remove('hidden');
+                }
+            }
+
+            // Scan a single frame from the video
+            function scanFrame() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    // Set canvas size to video size
+                    canvas.height = video.videoHeight;
+                    canvas.width = video.videoWidth;
+                    
+                    
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    
+                    
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+
+                    if (code) {
+                        
+                        stopScanner();
+                        scanResult.value = code.data;
+                        scanResultContainer.classList.remove('hidden');
+                        scannerUI.classList.add('hidden');
+                    } else {
+                        
+                        
+                        if (scanAnimationLoop) {
+                            scanAnimationLoop = requestAnimationFrame(scanFrame);
+                        }
+                    }
+                } else {
+                    
+                    if (scanAnimationLoop) {
+                        scanAnimationLoop = requestAnimationFrame(scanFrame);
+                    }
+                }
+            }
+
+            
+            function stopScanner() {
+                if (scanAnimationLoop) {
+                    cancelAnimationFrame(scanAnimationLoop);
+                    scanAnimationLoop = null;
+                }
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    videoStream = null;
+                }
+                video.pause();
+                video.srcObject = null;
+                video.classList.add('hidden');
+                stopScanBtn.classList.add('hidden');
+                scannerUI.classList.add('hidden');
+            }
+
+            
+            function resetScanner() {
+                stopScanner();
+                scanResultContainer.classList.add('hidden');
+                scanError.classList.add('hidden');
+                startScanBtn.classList.remove('hidden');
+                scanResult.value = '';
+            }
+
+            
+            function copyResult() {
+                if (!navigator.clipboard) {
+                    
+                    scanResult.select();
+                    document.execCommand('copy');
+                } else {
+                    navigator.clipboard.writeText(scanResult.value).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+                }
+
+                
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.disabled = true;
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.disabled = false;
+                }, 2000);
+            }
+
+            
+            qrTypeSelect.addEventListener('change', updateFormInputs);
+            generateBtn.addEventListener('click', generateQRCode);
+            clearBtn.addEventListener('click', clearFields);
+            downloadBtn.addEventListener('click', downloadQRCode);
+
+            
+            startScanBtn.addEventListener('click', startScanner);
+            stopScanBtn.addEventListener('click', resetScanner); 
+            scanAgainBtn.addEventListener('click', resetScanner);
+            copyBtn.addEventListener('click', copyResult);
+
+            
+            tabs.generate.addEventListener('click', () => switchTab('generate'));
+            tabs.scan.addEventListener('click', () => switchTab('scan'));
+
+            
+            switchTab('generate');
+            updateFormInputs();
+
+        });
+    </script>
+
+</body>
+</html>
+
