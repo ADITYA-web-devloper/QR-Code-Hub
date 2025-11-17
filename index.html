@@ -5,19 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Hub</title>
 
-    <!-- 1. Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 2. Google Font: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- 3. JS Library CDNs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
-    <!-- 4. Embedded CSS & Tailwind Configuration -->
     <style>
         /* Apply the Inter font family */
         body {
@@ -56,17 +52,14 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen antialiased">
 
-    <!-- Main Application Container -->
     <div class="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
 
-        <!-- Header -->
         <header class="text-center mb-6">
             <h1 class="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400">
                 QR Code Hub
             </h1>
         </header>
 
-        <!-- Tab Navigation -->
         <nav class="mb-6">
             <div class="flex border-b border-gray-300 dark:border-gray-700">
                 <button id="tab-generate"
@@ -80,12 +73,8 @@
             </div>
         </nav>
 
-        <!-- ======================= -->
-        <!-- TAB 1: GENERATE CONTENT -->
-        <!-- ======================= -->
         <main id="content-generate" class="tab-content">
             <div class="space-y-6">
-                <!-- QR Type Selector -->
                 <div>
                     <label for="qr-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         QR Code Type
@@ -101,17 +90,14 @@
                     </select>
                 </div>
 
-                <!-- Dynamic Input Forms Container -->
                 <div id="form-inputs" class="space-y-4">
-                    <!-- Text Form -->
                     <div id="form-text" class="form-section space-y-2">
                         <label for="qr-text" class="block text-sm font-medium">Text</label>
                         <textarea id="qr-text" rows="4"
                             class="w-full dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Enter any text..."></textarea>.
+                            placeholder="Enter any text..."></textarea>
                     </div>
 
-                    <!-- URL Form -->
                     <div id="form-url" class="form-section hidden space-y-2">
                         <label for="qr-url" class="block text-sm font-medium">URL</label>
                         <input type="url" id="qr-url"
@@ -119,7 +105,6 @@
                             placeholder="https://google.com">
                     </div>
 
-                    <!-- Phone Form -->
                     <div id="form-phone" class="form-section hidden space-y-2">
                         <label for="qr-phone" class="block text-sm font-medium">Phone Number</label>
                         <input type="tel" id="qr-phone"
@@ -127,7 +112,6 @@
                             placeholder="+1234567890">
                     </div>
 
-                    <!-- SMS Form -->
                     <div id="form-sms" class="form-section hidden space-y-4">
                         <div>
                             <label for="qr-sms-phone" class="block text-sm font-medium">Phone Number</label>
@@ -143,7 +127,6 @@
                         </div>
                     </div>
 
-                    <!-- Email Form -->
                     <div id="form-email" class="form-section hidden space-y-4">
                         <div>
                             <label for="qr-email-to" class="block text-sm font-medium">Email Address (To)</label>
@@ -165,7 +148,6 @@
                         </div>
                     </div>
 
-                    <!-- WiFi Form -->
                     <div id="form-wifi" class="form-section hidden space-y-4">
                         <div>
                             <label for="qr-wifi-ssid" class="block text-sm font-medium">SSID (Network Name)</label>
@@ -192,12 +174,10 @@
                     </div>
                 </div>
 
-                <!-- Error Message -->
                 <div id="generate-error"
                     class="hidden text-center text-red-500 dark:text-red-400 font-medium p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4">
                     <button id="generate-btn"
                         class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
@@ -209,12 +189,10 @@
                     </button>
                 </div>
 
-                <!-- QR Code Display Area -->
                 <div id="qrcode-display-container" class="hidden text-center pt-6">
                     <h3 class="text-lg font-semibold mb-4">Your QR Code:</h3>
                     <div id="qrcode-display" class="mx-auto">
-                        <!-- qrcode.js will render here -->
-                    </div>
+                        </div>
                     <button id="download-btn"
                         class="mt-6 w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
                         Download QR
@@ -223,12 +201,8 @@
             </div>
         </main>
 
-        <!-- ===================== -->
-        <!-- TAB 2: SCAN CONTENT   -->
-        <!-- ===================== -->
         <main id="content-scan" class="tab-content hidden">
             <div class="text-center">
-                <!-- Start Button -->
                 <div id="scan-options" class="flex flex-col sm:flex-row gap-4">
                     <button id="start-scan-btn"
                         class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
@@ -240,53 +214,54 @@
                     </button>
                 </div>
 
-                <!-- Hidden file input -->
                 <input type="file" id="qr-file-input" class="hidden" accept="image/*">
                 
-                <!-- Upload loading message -->
                 <p id="upload-loading-message" class="hidden text-sm text-gray-600 dark:text-gray-400 my-2 flex items-center justify-center">
                     <span class="spinner mr-2"></span> Processing image...
                 </p>
 
 
-                <!-- Scanner UI -->
                 <div id="scanner-ui" class="hidden w-full mt-4">
                     <p id="scanner-loading-message" class="text-sm text-gray-600 dark:text-gray-400 mb-2 flex items-center justify-center">
                         <span class="spinner mr-2"></span> Starting camera...
                     </p>
                     <video id="scan-video" class="w-full h-auto rounded-lg shadow-inner bg-gray-900" playsinline></video>
                     
-                    <!-- *** NEW STOP BUTTON *** -->
                     <button id="stop-scan-btn"
                         class="hidden w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
                         Stop Scan
                     </button>
 
-                    <!-- Hidden canvas for jsQR processing -->
                     <canvas id="scan-canvas" class="hidden"></canvas>
                 </div>
 
-                <!-- Scan Error Message -->
                 <div id="scan-error"
                     class="hidden mt-4 text-center text-red-500 dark:text-red-400 font-medium p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
                     Camera access denied. Please enable camera permissions in your browser settings.
                 </div>
 
-                <!-- Scan Result Display -->
                 <div id="scan-result-container" class="hidden mt-6 text-left">
                     <label for="scan-result" class="block text-lg font-semibold mb-2">Scanned Result:</label>
                     <textarea id="scan-result" readonly
                         class="w-full h-32 p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm font-mono text-sm"></textarea>
                     
-                    <div class="flex flex-col sm:flex-row gap-4 mt-4">
-                        <button id="copy-btn"
-                            class="w-full sm:w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                            Copy to Clipboard
+                    <div class="flex flex-col gap-4 mt-4">
+                        <button id="call-btn"
+                            class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            Call Number
                         </button>
-                        <button id="scan-again-btn"
-                            class="w-full sm:w-1/2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                            Scan Again
-                        </button>
+
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button id="copy-btn"
+                                class="w-full sm:w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                                Copy to Clipboard
+                            </button>
+                            <button id="scan-again-btn"
+                                class="w-full sm:w-1/2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                                Scan Again
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -294,9 +269,6 @@
 
     </div>
 
-    <!-- ======================= -->
-    <!-- JAVASCRIPT LOGIC        -->
-    <!-- ======================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
@@ -327,7 +299,7 @@
             const scannerUI = document.getElementById('scanner-ui');
             const scannerLoadingMsg = document.getElementById('scanner-loading-message');
             const video = document.getElementById('scan-video');
-            const stopScanBtn = document.getElementById('stop-scan-btn'); // *** ADDED VARIABLE ***
+            const stopScanBtn = document.getElementById('stop-scan-btn');
             const canvas = document.getElementById('scan-canvas');
             const ctx = canvas.getContext('2d');
             const scanError = document.getElementById('scan-error');
@@ -335,8 +307,8 @@
             const scanResult = document.getElementById('scan-result');
             const copyBtn = document.getElementById('copy-btn');
             const scanAgainBtn = document.getElementById('scan-again-btn');
+            const callBtn = document.getElementById('call-btn'); // --- NEW: Call Button ---
             
-            // --- NEW SCANNER ELEMENTS ---
             const scanOptions = document.getElementById('scan-options');
             const uploadScanBtn = document.getElementById('upload-scan-btn');
             const qrFileInput = document.getElementById('qr-file-input');
@@ -350,12 +322,10 @@
             // --- TABBING LOGIC ---
             // ===========================
             function switchTab(tabName) {
-                // Stop scanner if switching away from it
                 if (tabName !== 'scan') {
                     stopScanner();
                 }
 
-                // Update tab buttons
                 for (const [key, tab] of Object.entries(tabs)) {
                     if (key === tabName) {
                         tab.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
@@ -366,7 +336,6 @@
                     }
                 }
 
-                // Update content visibility
                 for (const [key, content] of Object.entries(contents)) {
                     if (key === tabName) {
                         content.classList.remove('hidden');
@@ -380,7 +349,6 @@
             // --- GENERATOR LOGIC ---
             // ===========================
 
-            // Show/Hide form inputs based on selected QR type
             function updateFormInputs() {
                 const selectedType = qrTypeSelect.value;
                 allFormSections.forEach(section => {
@@ -392,7 +360,6 @@
                 });
             }
 
-            // Get formatted data string from inputs
             function getFormattedQRData() {
                 const type = qrTypeSelect.value;
                 try {
@@ -401,7 +368,6 @@
                             const text = document.getElementById('qr-text').value;
                             if (!text) throw new Error('Text field is empty.');
                             return text;
-
                         case 'url':
                             const url = document.getElementById('qr-url').value;
                             if (!url) throw new Error('URL field is empty.');
@@ -409,18 +375,15 @@
                                 throw new Error('URL must start with http:// or https://');
                             }
                             return url;
-
                         case 'phone':
                             const phone = document.getElementById('qr-phone').value;
                             if (!phone) throw new Error('Phone number field is empty.');
                             return `tel:${phone}`;
-
                         case 'sms':
                             const smsPhone = document.getElementById('qr-sms-phone').value;
                             const smsMsg = document.getElementById('qr-sms-message').value;
                             if (!smsPhone) throw new Error('Phone number field is empty.');
                             return `SMSTO:${smsPhone}:${smsMsg}`;
-
                         case 'email':
                             const emailTo = document.getElementById('qr-email-to').value;
                             const emailSub = document.getElementById('qr-email-subject').value;
@@ -430,7 +393,6 @@
                                 throw new Error('Invalid email address format.');
                             }
                             return `mailto:${emailTo}?subject=${encodeURIComponent(emailSub)}&body=${encodeURIComponent(emailBody)}`;
-
                         case 'wifi':
                             const ssid = document.getElementById('qr-wifi-ssid').value;
                             const pass = document.getElementById('qr-wifi-pass').value;
@@ -440,7 +402,6 @@
                                 return `WIFI:T:nopass;S:${ssid};;`;
                             }
                             return `WIFI:T:${enc};S:${ssid};P:${pass};;`;
-
                         default:
                             throw new Error('Invalid QR type selected.');
                     }
@@ -451,20 +412,15 @@
                 }
             }
 
-            // Generate the QR code
             function generateQRCode() {
-                // Clear previous state
                 qrcodeDisplay.innerHTML = '';
                 qrCodeInstance = null;
                 generateError.classList.add('hidden');
                 qrcodeDisplayContainer.classList.add('hidden');
 
                 const data = getFormattedQRData();
-                if (!data) {
-                    return; // Error already shown by getFormattedQRData
-                }
+                if (!data) return;
 
-                // Generate new QR code
                 try {
                     qrCodeInstance = new QRCode(qrcodeDisplay, {
                         text: data,
@@ -481,7 +437,6 @@
                 }
             }
 
-            // Clear all input fields for the current form
             function clearFields() {
                 const selectedType = qrTypeSelect.value;
                 const activeForm = document.getElementById(`form-${selectedType}`);
@@ -494,11 +449,8 @@
                 generateError.classList.add('hidden');
             }
 
-            // Download the generated QR code
             function downloadQRCode() {
                 if (!qrCodeInstance) return;
-
-                // Find the canvas or img generated by the library
                 const canvas = qrcodeDisplay.querySelector('canvas');
                 const img = qrcodeDisplay.querySelector('img');
                 
@@ -525,33 +477,64 @@
             // --- SCANNER LOGIC ---
             // ===========================
 
-            // Start the camera and scanning loop
+            // --- HELPER: Handle Successful Scan ---
+            // This logic checks if the scanned text is a phone number
+            function handleScanSuccess(scannedText) {
+                stopScanner();
+                uploadLoadingMsg.classList.add('hidden');
+                
+                scanResult.value = scannedText;
+                scanResultContainer.classList.remove('hidden');
+                scannerUI.classList.add('hidden');
+
+                // --- Logic to check for Phone Number ---
+                // This Regex checks for strings starting with 'tel:' OR 
+                // containing at least 7 digits/dashes/spaces/pluses (common for phone nums)
+                const phoneRegex = /^(tel:)?(\+?[\d\s\-\(\)]{7,})$/i;
+
+                if (phoneRegex.test(scannedText)) {
+                    // It looks like a phone number!
+                    callBtn.classList.remove('hidden');
+                    
+                    // Clean the string to ensure it works with the dialer
+                    let rawNumber = scannedText;
+                    if (rawNumber.toLowerCase().startsWith('tel:')) {
+                        rawNumber = rawNumber.substring(4);
+                    }
+                    
+                    // Attach click event
+                    callBtn.onclick = () => {
+                        window.location.href = `tel:${rawNumber}`;
+                    };
+                } else {
+                    // Not a phone number
+                    callBtn.classList.add('hidden');
+                    callBtn.onclick = null;
+                }
+            }
+
             async function startScanner() {
-                // Reset UI
-                scanOptions.classList.add('hidden'); // <-- MODIFIED
+                scanOptions.classList.add('hidden');
                 scanError.classList.add('hidden');
                 scanResultContainer.classList.add('hidden');
                 scannerUI.classList.remove('hidden');
                 scannerLoadingMsg.classList.remove('hidden');
                 video.classList.add('hidden');
-                stopScanBtn.classList.add('hidden'); // *** HIDE STOP BTN INITIALLY ***
+                stopScanBtn.classList.add('hidden');
 
                 try {
-                    // Request camera stream
                     videoStream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: "environment" }
                     });
                     
                     video.srcObject = videoStream;
-                    video.setAttribute('playsinline', true); // Required for iOS
+                    video.setAttribute('playsinline', true);
                     video.play();
 
-                    // Hide loading message and show video once it's playing
                     video.onloadedmetadata = () => {
                         scannerLoadingMsg.classList.add('hidden');
                         video.classList.remove('hidden');
-                        stopScanBtn.classList.remove('hidden'); // *** SHOW STOP BTN ***
-                        // Start the scanning loop
+                        stopScanBtn.classList.remove('hidden');
                         scanAnimationLoop = requestAnimationFrame(scanFrame);
                     };
 
@@ -560,50 +543,34 @@
                     scanError.textContent = 'Camera access denied. Please enable camera permissions in your browser settings.';
                     scanError.classList.remove('hidden');
                     scannerUI.classList.add('hidden');
-                    scanOptions.classList.remove('hidden'); // <-- MODIFIED
+                    scanOptions.classList.remove('hidden');
                 }
             }
 
-            // Scan a single frame from the video
             function scanFrame() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    // Set canvas size to video size
                     canvas.height = video.videoHeight;
                     canvas.width = video.videoWidth;
-                    
-                    // Draw video frame to canvas
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // Get image data from canvas
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    // Try to decode QR code
                     const code = jsQR(imageData.data, imageData.width, imageData.height, {
                         inversionAttempts: "dontInvert",
                     });
 
                     if (code) {
-                        // --- QR Code Found! ---
-                        stopScanner();
-                        scanResult.value = code.data;
-                        scanResultContainer.classList.remove('hidden');
-                        scannerUI.classList.add('hidden');
+                        handleScanSuccess(code.data); // <--- Use Helper
                     } else {
-                        // --- No QR Code Found ---
-                        // Continue loop if still active
                         if (scanAnimationLoop) {
                             scanAnimationLoop = requestAnimationFrame(scanFrame);
                         }
                     }
                 } else {
-                    // Video not ready, try again
                     if (scanAnimationLoop) {
                         scanAnimationLoop = requestAnimationFrame(scanFrame);
                     }
                 }
             }
 
-            // Stop the camera and scanning loop
             function stopScanner() {
                 if (scanAnimationLoop) {
                     cancelAnimationFrame(scanAnimationLoop);
@@ -616,24 +583,22 @@
                 video.pause();
                 video.srcObject = null;
                 video.classList.add('hidden');
-                stopScanBtn.classList.add('hidden'); // *** HIDE STOP BTN ***
+                stopScanBtn.classList.add('hidden');
                 scannerUI.classList.add('hidden');
             }
 
-            // Reset the scanner UI to its initial state
             function resetScanner() {
                 stopScanner();
                 scanResultContainer.classList.add('hidden');
                 scanError.classList.add('hidden');
-                scanOptions.classList.remove('hidden'); // <-- MODIFIED
-                uploadLoadingMsg.classList.add('hidden'); // <-- ADDED
+                scanOptions.classList.remove('hidden');
+                uploadLoadingMsg.classList.add('hidden');
                 scanResult.value = '';
+                callBtn.classList.add('hidden'); // Ensure button is hidden on reset
             }
 
-            // Copy scan result to clipboard
             function copyResult() {
                 if (!navigator.clipboard) {
-                    // Fallback for older browsers
                     scanResult.select();
                     document.execCommand('copy');
                 } else {
@@ -642,7 +607,6 @@
                     });
                 }
 
-                // Show "Copied!" message
                 const originalText = copyBtn.textContent;
                 copyBtn.textContent = 'Copied!';
                 copyBtn.disabled = true;
@@ -652,14 +616,10 @@
                 }, 2000);
             }
 
-            // --- NEW FUNCTION: Handle File Upload ---
             function handleFileSelect(event) {
                 const file = event.target.files[0];
-                if (!file) {
-                    return;
-                }
+                if (!file) return;
 
-                // Reset UI
                 scanError.classList.add('hidden');
                 scanResultContainer.classList.add('hidden');
                 scanOptions.classList.add('hidden');
@@ -669,34 +629,21 @@
 
                 reader.onload = (e) => {
                     const img = new Image();
-                    
                     img.onload = () => {
-                        // Set canvas size to image size
                         canvas.width = img.width;
                         canvas.height = img.height;
-                        
-                        // Draw image to canvas
                         ctx.drawImage(img, 0, 0, img.width, img.height);
-                        
-                        // Get image data from canvas
                         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        
-                        // Try to decode QR code
                         const code = jsQR(imageData.data, imageData.width, imageData.height);
                         
-                        uploadLoadingMsg.classList.add('hidden');
-
                         if (code) {
-                            // --- QR Code Found! ---
-                            scanResult.value = code.data;
-                            scanResultContainer.classList.remove('hidden');
+                            handleScanSuccess(code.data); // <--- Use Helper
                         } else {
-                            // --- No QR Code Found ---
+                            uploadLoadingMsg.classList.add('hidden');
                             scanError.textContent = 'No QR code found in the uploaded image.';
                             scanError.classList.remove('hidden');
                             scanOptions.classList.remove('hidden');
                         }
-                        // Reset file input to allow re-uploading the same file
                         qrFileInput.value = null;
                     };
 
@@ -707,7 +654,6 @@
                         scanOptions.classList.remove('hidden');
                         qrFileInput.value = null;
                     };
-
                     img.src = e.target.result;
                 };
 
@@ -718,7 +664,6 @@
                     scanOptions.classList.remove('hidden');
                     qrFileInput.value = null;
                 };
-
                 reader.readAsDataURL(file);
             }
 
@@ -732,27 +677,21 @@
 
             // --- Scanner Event Listeners ---
             startScanBtn.addEventListener('click', startScanner);
-            stopScanBtn.addEventListener('click', resetScanner); // *** ADDED LISTENER ***
+            stopScanBtn.addEventListener('click', resetScanner);
             scanAgainBtn.addEventListener('click', resetScanner);
             copyBtn.addEventListener('click', copyResult);
-            // --- NEW LISTENERS ---
             uploadScanBtn.addEventListener('click', () => qrFileInput.click());
             qrFileInput.addEventListener('change', handleFileSelect);
-
 
             // --- Tab Event Listeners ---
             tabs.generate.addEventListener('click', () => switchTab('generate'));
             tabs.scan.addEventListener('click', () => switchTab('scan'));
 
             // --- Initial State ---
-            switchTab('generate'); // Set "Generate" as the default active tab
-            updateFormInputs(); // Set the initial form for "Text"
-
+            switchTab('generate');
+            updateFormInputs();
         });
     </script>
 
 </body>
 </html>
-
-
-
